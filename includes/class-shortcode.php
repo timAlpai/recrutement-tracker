@@ -27,7 +27,7 @@ class RT_Shortcode {
                 'form_id'    => (int)$atts['id'],
                 'ip_address' => $_SERVER['REMOTE_ADDR'],
                 'utm_source' => sanitize_text_field($source),
-                'fbclid'     => sanitize_textarea_field($_GET['fbclid'] ?? ''), // textarea pour accepter le long texte
+                'fbclid'     => sanitize_textarea_field($_GET['fbclid'] ?? ''),
                 'visit_url'  => esc_url_raw($current_url) 
             ]
         );
@@ -40,9 +40,8 @@ class RT_Shortcode {
             return !empty($custom_labels[$id]) ? $custom_labels[$id] : $default;
         };
 
-
         if ( isset($_GET['status']) && $_GET['status'] === 'success' ) {
-            return '<div style="padding:20px; background:#e7f4e9; color:#1e4620; border:1px solid #c3e6cb; border-radius:8px;">✅ Merci ! Votre candidature a bien été enregistrée.</div>';
+            return '<div style="padding:20px; background:#e7f4e9; color:#1e4620; border:1px solid #c3e6cb; border-radius:8px;">✅ Merci ! Votre demande a bien été enregistrée.</div>';
         }
 
         ob_start(); ?>
@@ -55,7 +54,7 @@ class RT_Shortcode {
             .rt-group label span { color: #ff4d4d; margin-left: 4px; }
             .rt-input { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
             .rt-textarea { width: 100%; height: 120px; resize: vertical; }
-            .rt-submit { background: #4da3ff; color: white; border: none; padding: 12px 30px; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; }
+            .rt-submit { background: #ed1c24; color: white; border: none; padding: 12px 30px; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; }
             @media (max-width: 600px) { .rt-row { flex-direction: column; gap: 0; } }
         </style>
 
@@ -87,6 +86,20 @@ class RT_Shortcode {
                 </div>
                 <?php endif; ?>
 
+                <?php if (in_array('user_phone', $fields)): ?>
+                <div class="rt-group">
+                    <label><?php echo $get_label('user_phone', 'Téléphone'); ?> <span>*</span></label>
+                    <input type="tel" name="user_phone" class="rt-input" placeholder="Votre téléphone" required>
+                </div>
+                <?php endif; ?>
+
+                <?php if (in_array('company', $fields)): ?>
+                <div class="rt-group">
+                    <label><?php echo $get_label('company', 'Société'); ?></label>
+                    <input type="text" name="company" class="rt-input" placeholder="Nom de votre entreprise">
+                </div>
+                <?php endif; ?>
+
                 <?php if (in_array('subject', $fields)): ?>
                 <div class="rt-group">
                     <label><?php echo $get_label('subject', 'Sujet'); ?></label>
@@ -101,22 +114,20 @@ class RT_Shortcode {
                 </div>
                 <?php endif; ?>
 
-                 <?php
+                <?php
                 $custom_fields_list = get_post_meta( $atts['id'], '_rt_custom_fields_list', true );
-    if ( !empty($custom_fields_list) ) {
-        $extra_fields = explode("\n", str_replace("\r", "", $custom_fields_list));
-        foreach ( $extra_fields as $field_label ) {
-            $field_label = trim($field_label);
-            if ( empty($field_label) ) continue;
-            $field_name = 'custom_' . sanitize_title($field_label);
-            ?>
-            <div class="rt-group">
-                <label><?php echo esc_html($field_label); ?></label>
-                <input type="text" name="<?php echo esc_attr($field_name); ?>" class="rt-input" placeholder="<?php echo esc_attr($field_label); ?>">
-            </div>
-            <?php
-        }
-    }
+                if ( !empty($custom_fields_list) ) {
+                    $extra_fields = explode("\n", str_replace("\r", "", $custom_fields_list));
+                    foreach ( $extra_fields as $field_label ) {
+                        $field_label = trim($field_label);
+                        if ( empty($field_label) ) continue;
+                        $field_name = 'custom_' . sanitize_title($field_label);
+                        echo '<div class="rt-group"><label>'.esc_html($field_label).'</label>';
+                        echo '<input type="text" name="'.esc_attr($field_name).'" class="rt-input" placeholder="'.esc_attr($field_label).'"></div>';
+                    }
+                }
+                ?>
+
                 <input type="hidden" name="utm_source" value="<?php echo esc_attr($_GET['utm_source'] ?? ''); ?>">
                 <input type="hidden" name="fbclid" value="<?php echo esc_attr($_GET['fbclid'] ?? ''); ?>">
 
